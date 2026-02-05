@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ===== AUTH INPUT ===== */
+
+.auth-input {
+  @apply w-full pl-11 pr-4 py-3 rounded-xl
+  bg-slate-800
+  border border-white/10
+  text-white
+  placeholder-slate-400
+  focus:outline-none
+  focus:border-sky-400
+  transition;
+}
+
+/* ===== AUTH BUTTON ===== */
+
+.auth-btn {
+  @apply w-full py-3 rounded-xl font-semibold
+  text-black
+  bg-gradient-to-r from-sky-400 to-indigo-400
+  hover:from-sky-500 hover:to-indigo-500
+  hover:shadow-lg
+  transition
+  disabled:opacity-50;
+}
+
+/* ===== BUBBLES ===== */
+
+.bubble {
+  position: absolute;
+  bottom: -120px;
+  border-radius: 9999px;
+  opacity: 0.4;
+  filter: blur(6px);
+  background: radial-gradient(
+    circle at 30% 30%,
+    #38bdf8,
+    #6366f1
+  );
+  animation: rise linear infinite;
+}
+
+.b1 {
+  width: 40px;
+  height: 40px;
+  left: 10%;
+  animation-duration: 20s;
+}
+
+.b2 {
+  width: 70px;
+  height: 70px;
+  left: 28%;
+  animation-duration: 28s;
+}
+
+.b3 {
+  width: 55px;
+  height: 55px;
+  left: 48%;
+  animation-duration: 24s;
+}
+
+.b4 {
+  width: 90px;
+  height: 90px;
+  left: 68%;
+  animation-duration: 34s;
+}
+
+.b5 {
+  width: 35px;
+  height: 35px;
+  left: 85%;
+  animation-duration: 22s;
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(0) scale(0.9);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  80% {
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: translateY(-120vh) scale(1.1);
+    opacity: 0;
+  }
+}
