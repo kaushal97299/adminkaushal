@@ -38,6 +38,7 @@ const menu: MenuItem[] = [
   { name: "Settings", path: "/settings", icon: Settings, showInMobile: true },
 ];
 
+
 export default function Navigation() {
   const pathname = usePathname();
 
