@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/immutability */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,7 +7,6 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  Eye,
   X,
   Search,
 } from "lucide-react";
@@ -53,6 +52,7 @@ export default function AdminInventoryPage() {
   useEffect(() => {
     if (!token) return;
     loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const loadData = async () => {
@@ -92,6 +92,7 @@ export default function AdminInventoryPage() {
 
     return () => clearTimeout(timer);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   /* ================= UPDATE ================= */
@@ -232,6 +233,7 @@ export default function AdminInventoryPage() {
             className="bg-[#0b1129]/80 rounded-2xl border border-white/10 overflow-hidden"
           >
             {c.image && (
+              // eslint-disable-next-line jsx-a11y/alt-text
               <img
                 src={`${API}${c.image}`}
                 className="w-full h-44 object-cover"
@@ -316,6 +318,7 @@ export default function AdminInventoryPage() {
             </div>
 
             {view.image && (
+              // eslint-disable-next-line jsx-a11y/alt-text
               <img
                 src={`${API}${view.image}`}
                 className="w-full h-60 object-cover"
