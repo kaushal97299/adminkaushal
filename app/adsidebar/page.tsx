@@ -31,7 +31,7 @@ interface MenuItem {
 const menu: MenuItem[] = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard, showInMobile: true },
   { name: "Users", path: "/users", icon: Users, showInMobile: true },
-  { name: "Sellers", path: "/sellers", icon: Store, showInMobile: true },
+  { name: "sellers", path: "/sellers", icon: Store, showInMobile: true },
   { name: "Sellers data ", path: "/inventory", icon: Store, showInMobile: true },
   { name: "Bookings", path: "/bookings", icon: BookOpen, showInMobile: false },
   { name: "Reports", path: "/reports", icon: BarChart3, showInMobile: true },

@@ -1,531 +1,391 @@
 /* eslint-disable @next/next/no-img-element */
-
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
-import {
-  Eye,
-  CheckCircle,
-  XCircle,
-  Trash2,
-  X,
-  FileText,
-} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Trash2, Search, Eye, X } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
-/* ================= TYPES ================= */
+const PER_PAGE = 10;
 
-interface DocItem {
-  number?: string;
-  image?: string;
-  status?: string;
-}
+export default function AdminUsers() {
 
-interface Documents {
-  aadhaar?: DocItem;
-  pan?: DocItem;
-  drivingLicense?: DocItem;
-}
+  const router = useRouter();
 
-interface User {
-  _id: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [users, setUsers] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [filtered, setFiltered] = useState<any[]>([]);
 
-  name: string;
-  email: string;
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
-  phone?: string;
-  address?: string;
-
-  dateOfBirth?: string;
-  gender?: string;
-
-  pincode?: string;
-  city?: string;
-  district?: string;
-  state?: string;
-
-  kycStatus: string;
-  kycRejectReason?: string;
-
-  documents?: Documents;
-}
-
-/* ================= COMPONENT ================= */
-
-export default function AdminKycPage() {
-
-  const [users, setUsers] = useState<User[]>([]);
-  const [view, setView] = useState<User | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  const [rejectId, setRejectId] = useState<string | null>(null);
-  const [rejectReason, setRejectReason] = useState("");
-
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("admin_token")
-      : null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [viewUser, setViewUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
 
-  /* ================= LOAD ================= */
 
+  /* ================= LOAD USERS ================= */
   useEffect(() => {
-    if (!token) return;
-    loadData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
 
+    const token = localStorage.getItem("admin_token");
 
-  const loadData = async () => {
+    if (!token) {
+      router.push("/admin/login");
+      return;
+    }
 
-    const res = await axios.get(`${API}/api/admin/kyc`, {
+    fetch(`${API}/api/admin/users`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    });
+    })
+      .then(res => res.json())
+      .then(data => {
 
-    setUsers(res.data);
-  };
+        if (!data.success) {
+          router.push("/admin/login");
+          return;
+        }
+
+        setUsers(data.users);
+        setFiltered(data.users);
+        setLoading(false);
+
+      })
+      .catch(() => {
+        alert("Failed to load users");
+        setLoading(false);
+      });
+
+  }, [router]);
 
 
-  /* ================= UPDATE ================= */
 
-  const updateStatus = async (
-    id: string,
-    status: "verified" | "rejected",
-    reason?: string
-  ) => {
+  /* ================= SEARCH ================= */
+  useEffect(() => {
 
-    await axios.put(
-      `${API}/api/admin/kyc/${id}/status`,
-      { status, reason },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+    const result = users.filter(u =>
+      u.email?.toLowerCase().includes(search.toLowerCase()) ||
+      u.state?.toLowerCase().includes(search.toLowerCase())
     );
 
-    setRejectId(null);
-    setRejectReason("");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFiltered(result);
+    setPage(1);
 
-    loadData();
-  };
+  }, [search, users]);
+
+
+
+  /* ================= PAGINATION ================= */
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+
+  const start = (page - 1) * PER_PAGE;
+  const end = start + PER_PAGE;
+
+  const paginated = filtered.slice(start, end);
+
 
 
   /* ================= DELETE ================= */
+  const handleDelete = async (id: string) => {
 
-  const deleteUser = async (id: string) => {
+    if (!confirm("Delete this user?")) return;
 
-    if (!confirm("Delete this user permanently?")) return;
+    const token = localStorage.getItem("admin_token");
 
-    await axios.delete(`${API}/api/admin/kyc/${id}`, {
+    const res = await fetch(`${API}/api/admin/user/${id}`, {
+      method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
-    loadData();
+    const data = await res.json();
+
+    if (data.success) {
+
+      const updated = users.filter(u => u._id !== id);
+
+      setUsers(updated);
+      setFiltered(updated);
+
+      alert("User deleted");
+
+    } else {
+      alert("Delete failed");
+    }
   };
 
 
-  if (!token) {
+
+  /* ================= VIEW ================= */
+  const handleView = async (id: string) => {
+
+    const token = localStorage.getItem("admin_token");
+
+    const res = await fetch(`${API}/api/admin/user/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setViewUser(data.user);
+    } else {
+      alert("Failed to load user");
+    }
+  };
+
+
+
+  /* ================= AVATAR ================= */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getAvatar = (user: any) => {
+
+    if (!user?.avatar) return "/avatar.png";
+
+    if (user.avatar.startsWith("http")) return user.avatar;
+
+    if (user.avatar.startsWith("data:image")) return user.avatar;
+
+    return `${API}/${user.avatar}`;
+  };
+
+
+
+  /* ================= LOADING ================= */
+  if (loading) {
     return (
-      <p className="text-center mt-20 text-red-400">
-        Admin login required
+      <p className="text-center mt-20 text-slate-400">
+        Loading users...
       </p>
     );
   }
 
 
+
   return (
+    <div className="min-h-screen p-6 bg-slate-950 text-white">
 
-    <div className="min-h-screen bg-slate-950 text-white p-6">
-
-      <h1 className="text-2xl font-bold mb-4 text-cyan-400">
-        KYC Verification Panel
-      </h1>
+      <div className="max-w-7xl mx-auto bg-slate-900 border border-white/10 rounded-xl shadow p-6">
 
 
-      {/* ================= TABLE ================= */}
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-3">
 
-      <div className="overflow-x-auto">
+          <h1 className="text-2xl font-bold text-cyan-400">
+            All Users
+          </h1>
 
-        <table className="w-full border border-white/10 text-sm">
+          <div className="flex items-center gap-2 border border-white/10 rounded-lg px-3 py-2 bg-slate-800">
 
-          <thead className="bg-slate-800">
+            <Search size={18} className="text-slate-400" />
 
-            <tr>
-              <th className="p-3 border">Name</th>
-              <th className="p-3 border">Email</th>
-              <th className="p-3 border">Phone</th>
-              <th className="p-3 border">Status</th>
-              <th className="p-3 border">View</th>
-              <th className="p-3 border">Verify</th>
-              <th className="p-3 border">Reject</th>
-              <th className="p-3 border">Delete</th>
-            </tr>
-
-          </thead>
-
-
-          <tbody>
-
-            {users.map((u) => (
-
-              <tr
-                key={u._id}
-                className="text-center border-b border-white/10 hover:bg-white/5"
-              >
-
-                <td className="p-2">{u.name}</td>
-                <td className="p-2">{u.email}</td>
-                <td className="p-2">{u.phone || "-"}</td>
-
-
-                <td className="p-2">
-
-                  <span
-                    className={`px-2 py-1 rounded text-xs ${
-                      u.kycStatus === "verified"
-                        ? "bg-green-500/20 text-green-400"
-                        : u.kycStatus === "rejected"
-                        ? "bg-red-500/20 text-red-400"
-                        : "bg-yellow-500/20 text-yellow-400"
-                    }`}
-                  >
-                    {u.kycStatus}
-                  </span>
-
-                </td>
-
-
-                <td className="p-2">
-
-                  <button
-                    onClick={() => setView(u)}
-                    className="text-cyan-400 hover:text-cyan-300"
-                  >
-                    <Eye size={18} />
-                  </button>
-
-                </td>
-
-
-                <td className="p-2">
-
-                  <button
-                    disabled={u.kycStatus !== "pending"}
-                    onClick={() =>
-                      updateStatus(u._id, "verified")
-                    }
-                    className="text-green-400 disabled:opacity-30"
-                  >
-                    <CheckCircle size={18} />
-                  </button>
-
-                </td>
-
-
-                <td className="p-2">
-
-                  <button
-                    disabled={u.kycStatus !== "pending"}
-                    onClick={() => setRejectId(u._id)}
-                    className="text-red-400 disabled:opacity-30"
-                  >
-                    <XCircle size={18} />
-                  </button>
-
-                </td>
-
-
-                <td className="p-2">
-
-                  <button
-                    onClick={() => deleteUser(u._id)}
-                    className="text-gray-400 hover:text-red-400"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-
-                </td>
-
-              </tr>
-
-            ))}
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-
-      {/* ================= REJECT MODAL ================= */}
-
-      {rejectId && (
-
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
-
-          <div className="bg-slate-900 w-full max-w-md rounded-xl p-5">
-
-            <h3 className="font-semibold mb-3 text-red-400">
-              Reject KYC
-            </h3>
-
-            <textarea
-              placeholder="Enter reject reason..."
-              value={rejectReason}
-              onChange={(e) =>
-                setRejectReason(e.target.value)
-              }
-              className="w-full bg-slate-800 border border-white/10 rounded p-2 text-sm"
-              rows={4}
+            <input
+              placeholder="Search by email or state"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="outline-none bg-transparent text-slate-200 placeholder:text-slate-500"
             />
 
-
-            <div className="flex justify-end gap-3 mt-4">
-
-              <button
-                onClick={() => setRejectId(null)}
-                className="px-3 py-1 text-gray-400"
-              >
-                Cancel
-              </button>
-
-              <button
-                disabled={!rejectReason.trim()}
-                onClick={() =>
-                  updateStatus(
-                    rejectId,
-                    "rejected",
-                    rejectReason
-                  )
-                }
-                className="px-4 py-1 bg-red-500 rounded text-sm disabled:opacity-40"
-              >
-                Reject
-              </button>
-
-            </div>
-
           </div>
 
         </div>
 
-      )}
 
 
-      {/* ================= SIDE MODAL ================= */}
+        {/* TABLE */}
+        <div className="overflow-x-auto">
 
-      {view && (
+          <table className="w-full text-sm border border-white/10">
 
-        <div className="fixed inset-0 bg-black/70 z-50 flex justify-end">
+            <thead className="bg-slate-800 text-slate-200">
+              <tr>
 
-          <div className="w-full sm:w-[480px] bg-slate-900 h-full overflow-y-auto">
+                <th className="p-3 border border-white/10">Name</th>
+                <th className="p-3 border border-white/10">Email</th>
+                <th className="p-3 border border-white/10">Phone</th>
+                <th className="p-3 border border-white/10">State</th>
+                <th className="p-3 border border-white/10">Joined</th>
+                <th className="p-3 border border-white/10">Action</th>
 
-            <div className="flex justify-between p-4 border-b border-white/10">
+              </tr>
+            </thead>
 
-              <h2 className="font-semibold text-lg">
-                Client Details
-              </h2>
 
-              <button onClick={() => setView(null)}>
-                <X />
+            <tbody>
+
+              {paginated.map(user => (
+
+                <tr
+                  key={user._id}
+                  className="text-center border-b border-white/10 hover:bg-white/5"
+                >
+
+                  <td className="p-2">{user.name}</td>
+                  <td className="p-2 text-slate-300">{user.email}</td>
+                  <td className="p-2">{user.phone || "-"}</td>
+                  <td className="p-2">{user.state || "-"}</td>
+
+                  <td className="p-2">
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </td>
+
+                  <td className="p-2 space-x-4">
+
+                    {/* VIEW */}
+                    <button
+                      onClick={() => handleView(user._id)}
+                      className="text-cyan-400 hover:text-cyan-300"
+                    >
+                      <Eye size={18} />
+                    </button>
+
+                    {/* DELETE */}
+                    <button
+                      onClick={() => handleDelete(user._id)}
+                      className="text-red-400 hover:text-red-300"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+
+                  </td>
+
+                </tr>
+
+              ))}
+
+
+              {!paginated.length && (
+                <tr>
+                  <td colSpan={6} className="p-4 text-center text-slate-500">
+                    No users found
+                  </td>
+                </tr>
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+
+
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+
+          <div className="flex justify-center gap-2 mt-6">
+
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(p => p - 1)}
+              className="px-3 py-1 border border-white/10 rounded disabled:opacity-40 hover:bg-white/5"
+            >
+              Prev
+            </button>
+
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i + 1)}
+                className={`px-3 py-1 border border-white/10 rounded
+                  ${page === i + 1
+                    ? "bg-cyan-500/20 text-cyan-400"
+                    : "hover:bg-white/5"}`}
+              >
+                {i + 1}
               </button>
+            ))}
 
-            </div>
-
-
-            <div className="p-5 space-y-5 text-sm">
-
-
-              {/* PERSONAL */}
-
-              <div>
-
-                <h4 className="text-cyan-400 mb-2">
-                  Personal Info
-                </h4>
-
-                <Info label="Name" value={view.name} />
-                <Info label="Email" value={view.email} />
-                <Info label="Phone" value={view.phone} />
-                <Info label="Gender" value={view.gender} />
-
-                <Info
-                  label="DOB"
-                  value={
-                    view.dateOfBirth
-                      ? new Date(
-                          view.dateOfBirth
-                        ).toLocaleDateString()
-                      : ""
-                  }
-                />
-
-                <Info label="Address" value={view.address} />
-
-                <Info
-                  label="Location"
-                  value={`${view.city || ""}, ${view.district || ""}, ${view.state || ""}`}
-                />
-
-              </div>
-
-
-              {/* DOCUMENT NUMBERS */}
-
-              <div>
-
-                <h4 className="text-cyan-400 mb-2">
-                  Document Numbers
-                </h4>
-
-                <Info
-                  label="Aadhaar"
-                  value={view.documents?.aadhaar?.number}
-                />
-
-                <Info
-                  label="PAN"
-                  value={view.documents?.pan?.number}
-                />
-
-                <Info
-                  label="Driving License"
-                  value={
-                    view.documents?.drivingLicense?.number
-                  }
-                />
-
-              </div>
-
-
-              {/* DOCUMENT IMAGES */}
-
-              <div>
-
-                <h4 className="text-cyan-400 mb-2">
-                  Documents
-                </h4>
-
-                <DocItem
-                  title="Aadhaar"
-                  img={view.documents?.aadhaar?.image}
-                  setPreview={setImagePreview}
-                />
-
-                <DocItem
-                  title="PAN"
-                  img={view.documents?.pan?.image}
-                  setPreview={setImagePreview}
-                />
-
-                <DocItem
-                  title="Driving License"
-                  img={view.documents?.drivingLicense?.image}
-                  setPreview={setImagePreview}
-                />
-
-              </div>
-
-
-              {/* REJECT REASON */}
-
-              {view.kycStatus === "rejected" &&
-                view.kycRejectReason && (
-
-                  <div className="bg-red-500/10 p-3 rounded">
-
-                    <p className="text-red-400 text-sm">
-                      Reject Reason:
-                    </p>
-
-                    <p className="text-gray-300 text-sm">
-                      {view.kycRejectReason}
-                    </p>
-
-                  </div>
-
-                )}
-
-            </div>
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage(p => p + 1)}
+              className="px-3 py-1 border border-white/10 rounded disabled:opacity-40 hover:bg-white/5"
+            >
+              Next
+            </button>
 
           </div>
-
-        </div>
-
-      )}
+        )}
 
 
-      {/* IMAGE ZOOM */}
 
-      {imagePreview && (
+        {/* VIEW MODAL */}
+        {viewUser && (
 
-        <div
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
-          onClick={() => setImagePreview(null)}
-        >
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
 
-          {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <img
-            src={`${API}${imagePreview}`}
-            className="max-h-[90%] rounded shadow-lg"
-          />
-
-        </div>
-
-      )}
-
-    </div>
-  );
-}
+            <div className="bg-slate-900 border border-white/10 w-full max-w-lg rounded-xl p-6 relative">
 
 
-/* ================= COMPONENTS ================= */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function Info({ label, value }: any) {
-
-  if (!value) return null;
-
-  return (
-
-    <p className="text-gray-300">
-
-      <span className="text-gray-400">{label}:</span>{" "}
-      {value}
-
-    </p>
-  );
-}
+              {/* CLOSE */}
+              <button
+                onClick={() => setViewUser(null)}
+                className="absolute top-3 right-3 text-slate-400 hover:text-white"
+              >
+                <X size={20} />
+              </button>
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function DocItem({ title, img, setPreview }: any) {
 
-  if (!img) return null;
+              {/* HEADER */}
+              <div className="flex flex-col items-center mb-5">
+
+                <img
+                  src={getAvatar(viewUser)}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-cyan-500/30 mb-3"
+                  alt="User"
+                />
+
+                <h2 className="text-lg font-semibold">
+                  {viewUser.name}
+                </h2>
+
+                <p className="text-sm text-slate-400">
+                  {viewUser.email}
+                </p>
+
+              </div>
 
 
-  return (
 
-    <div className="flex justify-between items-center bg-white/5 p-3 rounded mb-2">
+              {/* DETAILS */}
+              <div className="space-y-2 text-sm text-slate-300">
 
-      <span>{title}</span>
+                <p><b className="text-slate-400">Phone:</b> {viewUser.phone || "-"}</p>
+                <p><b className="text-slate-400">Gender:</b> {viewUser.gender || "-"}</p>
+                <p><b className="text-slate-400">DOB:</b> {viewUser.dob || "-"}</p>
 
+                <p><b className="text-slate-400">Bio:</b> {viewUser.bio || "-"}</p>
+                <p><b className="text-slate-400">Emergency:</b> {viewUser.emergency || "-"}</p>
 
-      <button
-        onClick={() => setPreview(img)}
-        className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
-      >
+                <p><b className="text-slate-400">Address:</b> {viewUser.address || "-"}</p>
 
-        <FileText size={16} />
-        View
+                <p><b className="text-slate-400">Village:</b> {viewUser.village || "-"}</p>
+                <p><b className="text-slate-400">District:</b> {viewUser.district || "-"}</p>
+                <p><b className="text-slate-400">State:</b> {viewUser.state || "-"}</p>
+                <p><b className="text-slate-400">Pincode:</b> {viewUser.pincode || "-"}</p>
 
-      </button>
+                <p>
+                  <b className="text-slate-400">Joined:</b>{" "}
+                  {new Date(viewUser.createdAt).toLocaleString()}
+                </p>
+
+              </div>
+
+            </div>
+          </div>
+        )}
+
+      </div>
 
     </div>
   );
