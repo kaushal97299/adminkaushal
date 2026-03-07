@@ -33,7 +33,7 @@ const menu: MenuItem[] = [
   { name: "Users", path: "/users", icon: Users, showInMobile: true },
   { name: "sellers", path: "/sellers", icon: Store, showInMobile: true },
   { name: "Sellers data ", path: "/inventory", icon: Store, showInMobile: true },
-  { name: "Bookings", path: "/bookings", icon: BookOpen, showInMobile: false },
+  { name: "Contact", path: "/contact", icon: BookOpen, showInMobile: false },
   { name: "Reports", path: "/reports", icon: BarChart3, showInMobile: true },
   { name: "Settings", path: "/settings", icon: Settings, showInMobile: true },
 ];
