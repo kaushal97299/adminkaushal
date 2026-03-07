@@ -19,6 +19,7 @@ const [contacts,setContacts] = useState<any[]>([]);
 const [filtered,setFiltered] = useState<any[]>([]);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const [selected,setSelected] = useState<any>(null);
+
 const [reply,setReply] = useState("");
 
 const [showReply,setShowReply] = useState(false);
@@ -30,6 +31,9 @@ const [categoryFilter,setCategoryFilter] = useState("all");
 
 const [page,setPage] = useState(1);
 const perPage = 8;
+
+
+/* LOAD CONTACTS */
 
 const loadContacts = async ()=>{
 
@@ -61,6 +65,9 @@ useEffect(()=>{
 loadContacts();
 },[]);
 
+
+/* FILTER */
+
 useEffect(()=>{
 
 let data = [...contacts];
@@ -81,8 +88,12 @@ data = data.filter(c => c.category === categoryFilter);
 }
 
 setFiltered(data);
+setPage(1);
 
 },[search,statusFilter,categoryFilter,contacts]);
+
+
+/* DELETE */
 
 const deleteContact = async(id:string)=>{
 
@@ -102,6 +113,9 @@ loadContacts();
 
 };
 
+
+/* SEND REPLY */
+
 const sendReply = async()=>{
 
 if(!reply) return alert("Write reply");
@@ -116,7 +130,7 @@ headers:{
 "Content-Type":"application/json",
 Authorization:`Bearer ${token}`
 },
-body:JSON.stringify({reply})
+body:JSON.stringify({reply,status:"replied"})
 }
 );
 
@@ -126,9 +140,36 @@ loadContacts();
 
 };
 
+
+/* UPDATE STATUS */
+
+const updateStatus = async(id:string,status:string)=>{
+
+const token = localStorage.getItem("token");
+
+await fetch(
+`${process.env.NEXT_PUBLIC_API_URL}/api/admin/contact/reply/${id}`,
+{
+method:"PUT",
+headers:{
+"Content-Type":"application/json",
+Authorization:`Bearer ${token}`
+},
+body:JSON.stringify({status})
+}
+);
+
+loadContacts();
+
+};
+
+
+/* PAGINATION */
+
 const start = (page-1)*perPage;
 const paginated = filtered.slice(start,start+perPage);
 const totalPages = Math.ceil(filtered.length/perPage);
+
 
 return(
 
@@ -137,8 +178,37 @@ return(
 <div className="max-w-7xl mx-auto">
 
 <h1 className="text-3xl font-bold mb-8 flex items-center gap-2">
-<Mail className="text-cyan-400"/> Contact Support Dashboard
+
+<Mail className="text-cyan-400"/>
+
+Contact Support Dashboard
+
+<span className="bg-red-500 text-white text-xs px-2 py-1 rounded">
+{contacts.filter(c=>c.status==="new").length}
+</span>
+
 </h1>
+
+
+{/* STATUS TABS */}
+
+<div className="flex gap-2 mb-6">
+
+{["all","new","in-progress","replied","closed"].map((s)=>(
+<button
+key={s}
+onClick={()=>setStatusFilter(s)}
+className={`px-4 py-2 rounded ${
+statusFilter===s
+?"bg-cyan-400 text-black"
+:"bg-white/5 text-slate-300"
+}`}
+>
+{s}
+</button>
+))}
+
+</div>
 
 
 {/* SEARCH + FILTER */}
@@ -158,16 +228,6 @@ className="p-2 outline-none bg-transparent text-white placeholder-slate-400"
 
 </div>
 
-<select
-value={statusFilter}
-onChange={(e)=>setStatusFilter(e.target.value)}
-className="p-2 rounded bg-white/5 border border-white/10 text-slate-300"
->
-<option value="all">All Status</option>
-<option value="new">New</option>
-<option value="replied">Replied</option>
-<option value="closed">Closed</option>
-</select>
 
 <select
 value={categoryFilter}
@@ -177,6 +237,7 @@ className="p-2 rounded bg-white/5 border border-white/10 text-slate-300"
 <option value="all">All Category</option>
 <option value="booking">Booking</option>
 <option value="payment">Payment</option>
+<option value="availability">Availability</option>
 <option value="complaint">Complaint</option>
 <option value="other">Other</option>
 </select>
@@ -186,15 +247,15 @@ className="p-2 rounded bg-white/5 border border-white/10 text-slate-300"
 
 {/* TABLE */}
 
-<div className="bg-[#020617] border border-white/10 rounded-xl shadow overflow-hidden">
+<div className="border border-white/10 rounded-xl overflow-hidden">
 
 <table className="w-full text-sm">
 
 <thead className="bg-white/5">
 
-<tr className="text-left text-slate-300">
+<tr>
 
-<th className="p-3">Name</th>
+<th className="p-3 text-left">Name</th>
 <th>Email</th>
 <th>Category</th>
 <th>Status</th>
@@ -211,29 +272,42 @@ className="p-2 rounded bg-white/5 border border-white/10 text-slate-300"
 
 <tr key={c._id} className="border-t border-white/10">
 
-<td className="p-3 font-medium">{c.name}</td>
+<td className="p-3">{c.name}</td>
 
 <td className="text-slate-400">{c.email}</td>
 
 <td>
+
 <span className="bg-white/5 text-cyan-400 px-2 py-1 rounded text-xs">
-{c.category || "other"}
+
+{c.category}
+
 </span>
+
 </td>
 
 <td>
+
 <span className={`text-xs px-2 py-1 rounded ${
-c.status==="replied"
+c.status==="new"
+?"bg-yellow-500/10 text-yellow-400"
+:c.status==="in-progress"
+?"bg-blue-500/10 text-blue-400"
+:c.status==="replied"
 ?"bg-green-500/10 text-green-400"
-:"bg-yellow-500/10 text-yellow-400"
+:"bg-red-500/10 text-red-400"
 }`}>
+
 {c.status}
+
 </span>
+
 </td>
 
 <td className="text-xs text-slate-400">
 {new Date(c.createdAt).toLocaleDateString()}
 </td>
+
 
 <td className="flex gap-2 py-3">
 
@@ -252,8 +326,15 @@ className="p-2 bg-cyan-500/10 text-cyan-400 rounded hover:bg-cyan-500/20"
 </button>
 
 <button
+onClick={()=>updateStatus(c._id,"in-progress")}
+className="p-2 bg-blue-500/10 text-blue-400 rounded"
+>
+Start
+</button>
+
+<button
 onClick={()=>deleteContact(c._id)}
-className="p-2 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20"
+className="p-2 bg-red-500/10 text-red-400 rounded"
 >
 <Trash2 size={16}/>
 </button>
@@ -321,7 +402,7 @@ Message Details
 {selected.attachment &&(
 
 <a
-href={selected.attachment}
+href={`${process.env.NEXT_PUBLIC_API_URL}/uploads/contact/${selected.attachment}`}
 target="_blank"
 className="text-cyan-400 text-sm mt-3 block"
 >
