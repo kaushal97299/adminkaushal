@@ -30,21 +30,26 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen w-full overflow-hidden bg-black ">
-
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} bg-[#020617] min-h-screen`}
+      >
         {/* 🔐 AUTH GUARD */}
         <AuthGuard>
 
-          {/* Sidebar */}
-          <Navigation />
+          {/* MAIN LAYOUT WRAPPER */}
+          <div className="flex min-h-screen">
 
-          {/* Main Content */}
-          <main className="flex-1 md:ml-72 p-5 pb-24 md:pb-6 min-h-screen">
-            {children}
-          </main>
+            {/* Sidebar */}
+            <Navigation />
+
+            {/* Main Content */}
+            <main className="flex-1 md:ml-59 p-6 pb-24 md:pb-6">
+              {children}
+            </main>
+
+          </div>
 
         </AuthGuard>
-
       </body>
     </html>
   );
