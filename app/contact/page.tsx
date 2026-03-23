@@ -39,7 +39,10 @@ const loadContacts = async ()=>{
 
 try{
 
-const token = localStorage.getItem("token");
+const token =
+  typeof window !== "undefined"
+    ? localStorage.getItem("token")
+    : null;
 
 const res = await fetch(
 `${process.env.NEXT_PUBLIC_API_URL}/api/admin/contact`,
@@ -74,8 +77,8 @@ let data = [...contacts];
 
 if(search){
 data = data.filter(c =>
-c.name.toLowerCase().includes(search.toLowerCase()) ||
-c.email.toLowerCase().includes(search.toLowerCase())
+  c.name?.toLowerCase().includes(search.toLowerCase()) ||
+  c.email?.toLowerCase().includes(search.toLowerCase())
 );
 }
 
@@ -402,13 +405,15 @@ Message Details
 {selected.attachment &&(
 
 <a
-href={`${process.env.NEXT_PUBLIC_API_URL}/uploads/contact/${selected.attachment}`}
-target="_blank"
-className="text-cyan-400 text-sm mt-3 block"
+  href={
+    selected.attachment?.startsWith("http")
+      ? selected.attachment
+      : `${process.env.NEXT_PUBLIC_API_URL}/uploads/contact/${selected.attachment}`
+  }
+  target="_blank"
+  className="text-cyan-400 text-sm mt-3 block"
 >
-
-View Attachment
-
+  View Attachment
 </a>
 
 )}

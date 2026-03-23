@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 
 import {
@@ -40,9 +40,15 @@ const menu: MenuItem[] = [
 export default function Navigation() {
 
   const pathname = usePathname();
+  const router = useRouter();
 
   const [openProfile,setOpenProfile] = useState(false);
   const [openMobileProfile,setOpenMobileProfile] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem("admin_token");
+    router.push("/access");
+  };
 
   const renderItem = (item:MenuItem,mobile=false)=>{
 
@@ -157,7 +163,7 @@ className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text
 <Settings size={16}/> Account Settings
 </Link>
 
-<button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10">
+<button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10">
 <LogOut size={16}/> Logout
 </button>
 
@@ -249,7 +255,7 @@ className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10"
 </Link>
 
 <button
-onClick={()=>setOpenMobileProfile(false)}
+onClick={handleLogout}
 className="w-full flex items-center gap-3 p-3 rounded-xl bg-red-500/10 text-red-400"
 >
 <LogOut size={18}/> Logout

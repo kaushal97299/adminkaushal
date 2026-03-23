@@ -320,67 +320,94 @@ export default function AdminUsers() {
 
         {/* VIEW MODAL */}
         {viewUser && (
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-6"
+            onClick={() => setViewUser(null)}
+          >
+            <div
+              className="bg-slate-900 border border-white/10 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
 
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-
-            <div className="bg-slate-900 border border-white/10 w-full max-w-lg rounded-xl p-6 relative">
-
-
-              {/* CLOSE */}
-              <button
-                onClick={() => setViewUser(null)}
-                className="absolute top-3 right-3 text-slate-400 hover:text-white"
-              >
-                <X size={20} />
-              </button>
-
-
-
-              {/* HEADER */}
-              <div className="flex flex-col items-center mb-5">
-
-                <img
-                  src={getAvatar(viewUser)}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-cyan-500/30 mb-3"
-                  alt="User"
-                />
-
-                <h2 className="text-lg font-semibold">
-                  {viewUser.name}
-                </h2>
-
-                <p className="text-sm text-slate-400">
-                  {viewUser.email}
-                </p>
-
+              {/* ── HEADER ── */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
+                <h2 className="text-base font-bold text-cyan-400">User Details</h2>
+                <button
+                  onClick={() => setViewUser(null)}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition"
+                >
+                  <X size={18} />
+                </button>
               </div>
 
+              {/* ── SCROLLABLE BODY ── */}
+              <div className="overflow-y-auto flex-1 p-5 space-y-5">
 
+                {/* AVATAR + NAME */}
+                <div className="flex flex-col items-center gap-2">
+                  <img
+                    src={getAvatar(viewUser)}
+                    className="w-20 h-20 rounded-full object-cover border-4 border-cyan-500/30"
+                    alt="User"
+                  />
+                  <div className="text-center">
+                    <p className="text-base font-semibold text-white">{viewUser.name}</p>
+                    <p className="text-xs text-slate-400">{viewUser.email}</p>
+                  </div>
+                </div>
 
-              {/* DETAILS */}
-              <div className="space-y-2 text-sm text-slate-300">
+                {/* PERSONAL INFO */}
+                <div>
+                  <p className="text-[10px] uppercase text-slate-500 mb-2 tracking-wider">Personal Info</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "Phone",     value: viewUser.phone     },
+                      { label: "Gender",    value: viewUser.gender    },
+                      { label: "DOB",       value: viewUser.dob       },
+                      { label: "Emergency", value: viewUser.emergency },
+                    ].map((row) => (
+                      <div key={row.label} className="bg-white/5 rounded-xl px-3 py-2.5 border border-white/5">
+                        <p className="text-[10px] uppercase text-slate-500 mb-0.5">{row.label}</p>
+                        <p className="text-sm text-slate-200">{row.value || "—"}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-                <p><b className="text-slate-400">Phone:</b> {viewUser.phone || "-"}</p>
-                <p><b className="text-slate-400">Gender:</b> {viewUser.gender || "-"}</p>
-                <p><b className="text-slate-400">DOB:</b> {viewUser.dob || "-"}</p>
+                {/* BIO */}
+                {viewUser.bio && (
+                  <div className="bg-white/5 rounded-xl px-3 py-2.5 border border-white/5">
+                    <p className="text-[10px] uppercase text-slate-500 mb-0.5">Bio</p>
+                    <p className="text-sm text-slate-200 leading-relaxed">{viewUser.bio}</p>
+                  </div>
+                )}
 
-                <p><b className="text-slate-400">Bio:</b> {viewUser.bio || "-"}</p>
-                <p><b className="text-slate-400">Emergency:</b> {viewUser.emergency || "-"}</p>
+                {/* ADDRESS */}
+                <div>
+                  <p className="text-[10px] uppercase text-slate-500 mb-2 tracking-wider">Address</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "Address",  value: viewUser.address  },
+                      { label: "Village",  value: viewUser.village  },
+                      { label: "District", value: viewUser.district },
+                      { label: "State",    value: viewUser.state    },
+                      { label: "Pincode",  value: viewUser.pincode  },
+                    ].map((row) => (
+                      <div key={row.label} className="bg-white/5 rounded-xl px-3 py-2.5 border border-white/5">
+                        <p className="text-[10px] uppercase text-slate-500 mb-0.5">{row.label}</p>
+                        <p className="text-sm text-slate-200">{row.value || "—"}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-                <p><b className="text-slate-400">Address:</b> {viewUser.address || "-"}</p>
-
-                <p><b className="text-slate-400">Village:</b> {viewUser.village || "-"}</p>
-                <p><b className="text-slate-400">District:</b> {viewUser.district || "-"}</p>
-                <p><b className="text-slate-400">State:</b> {viewUser.state || "-"}</p>
-                <p><b className="text-slate-400">Pincode:</b> {viewUser.pincode || "-"}</p>
-
-                <p>
-                  <b className="text-slate-400">Joined:</b>{" "}
-                  {new Date(viewUser.createdAt).toLocaleString()}
-                </p>
+                {/* JOINED */}
+                <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl px-3 py-2.5">
+                  <p className="text-[10px] uppercase text-slate-500 mb-0.5">Joined</p>
+                  <p className="text-sm text-cyan-300">{new Date(viewUser.createdAt).toLocaleString()}</p>
+                </div>
 
               </div>
-
             </div>
           </div>
         )}

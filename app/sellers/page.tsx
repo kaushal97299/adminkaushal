@@ -322,143 +322,143 @@ export default function AdminKycPage() {
       {/* ================= SIDE MODAL ================= */}
 
       {view && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6"
+          onClick={() => setView(null)}
+        >
+          <div
+            className="bg-slate-900 border border-white/10 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
 
-        <div className="fixed inset-0 bg-black/70 z-50 flex justify-end">
-
-          <div className="w-full sm:w-[480px] bg-slate-900 h-full overflow-y-auto">
-
-            <div className="flex justify-between p-4 border-b border-white/10">
-
-              <h2 className="font-semibold text-lg">
-                Client Details
-              </h2>
-
-              <button onClick={() => setView(null)}>
-                <X />
-              </button>
-
+            {/* ── HEADER ── */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
+              <div>
+                <h2 className="text-base font-bold text-cyan-400">Client Details</h2>
+                <p className="text-xs text-slate-500 mt-0.5">{view.email}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                  view.kycStatus === "verified"
+                    ? "bg-green-500/20 text-green-400"
+                    : view.kycStatus === "rejected"
+                    ? "bg-red-500/20 text-red-400"
+                    : "bg-yellow-500/20 text-yellow-400"
+                }`}>
+                  {view.kycStatus.toUpperCase()}
+                </span>
+                <button
+                  onClick={() => setView(null)}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition"
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
+            {/* ── SCROLLABLE BODY ── */}
+            <div className="overflow-y-auto flex-1 p-5 space-y-5">
 
-            <div className="p-5 space-y-5 text-sm">
-
-
-              {/* PERSONAL */}
-
+              {/* PERSONAL INFO */}
               <div>
-
-                <h4 className="text-cyan-400 mb-2">
-                  Personal Info
-                </h4>
-
-                <Info label="Name" value={view.name} />
-                <Info label="Email" value={view.email} />
-                <Info label="Phone" value={view.phone} />
-                <Info label="Gender" value={view.gender} />
-
-                <Info
-                  label="DOB"
-                  value={
-                    view.dateOfBirth
-                      ? new Date(
-                          view.dateOfBirth
-                        ).toLocaleDateString()
-                      : ""
-                  }
-                />
-
-                <Info label="Address" value={view.address} />
-
-                <Info
-                  label="Location"
-                  value={`${view.city || ""}, ${view.district || ""}, ${view.state || ""}`}
-                />
-
+                <p className="text-[10px] uppercase text-slate-500 tracking-wider mb-2">Personal Info</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: "Name",   value: view.name },
+                    { label: "Phone",  value: view.phone },
+                    { label: "Gender", value: view.gender },
+                    { label: "DOB",    value: view.dateOfBirth ? new Date(view.dateOfBirth).toLocaleDateString() : undefined },
+                  ].map((row) => row.value ? (
+                    <div key={row.label} className="bg-white/5 rounded-xl px-3 py-2.5 border border-white/5">
+                      <p className="text-[10px] uppercase text-slate-500 mb-0.5">{row.label}</p>
+                      <p className="text-sm text-slate-200">{row.value}</p>
+                    </div>
+                  ) : null)}
+                </div>
               </div>
 
+              {/* ADDRESS */}
+              {(view.address || view.city || view.district || view.state || view.pincode) && (
+                <div>
+                  <p className="text-[10px] uppercase text-slate-500 tracking-wider mb-2">Address</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "Address",  value: view.address  },
+                      { label: "City",     value: view.city     },
+                      { label: "District", value: view.district },
+                      { label: "State",    value: view.state    },
+                      { label: "Pincode",  value: view.pincode  },
+                    ].map((row) => row.value ? (
+                      <div key={row.label} className="bg-white/5 rounded-xl px-3 py-2.5 border border-white/5">
+                        <p className="text-[10px] uppercase text-slate-500 mb-0.5">{row.label}</p>
+                        <p className="text-sm text-slate-200">{row.value}</p>
+                      </div>
+                    ) : null)}
+                  </div>
+                </div>
+              )}
 
               {/* DOCUMENT NUMBERS */}
-
-              <div>
-
-                <h4 className="text-cyan-400 mb-2">
-                  Document Numbers
-                </h4>
-
-                <Info
-                  label="Aadhaar"
-                  value={view.documents?.aadhaar?.number}
-                />
-
-                <Info
-                  label="PAN"
-                  value={view.documents?.pan?.number}
-                />
-
-                <Info
-                  label="Driving License"
-                  value={
-                    view.documents?.drivingLicense?.number
-                  }
-                />
-
-              </div>
-
+              {(view.documents?.aadhaar?.number || view.documents?.pan?.number || view.documents?.drivingLicense?.number) && (
+                <div>
+                  <p className="text-[10px] uppercase text-slate-500 tracking-wider mb-2">Document Numbers</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      { label: "Aadhaar",         value: view.documents?.aadhaar?.number },
+                      { label: "PAN",              value: view.documents?.pan?.number },
+                      { label: "Driving License",  value: view.documents?.drivingLicense?.number },
+                    ].map((row) => row.value ? (
+                      <div key={row.label} className="bg-white/5 rounded-xl px-3 py-2.5 border border-white/5 flex justify-between items-center">
+                        <p className="text-[10px] uppercase text-slate-500">{row.label}</p>
+                        <p className="text-sm text-slate-200 font-mono">{row.value}</p>
+                      </div>
+                    ) : null)}
+                  </div>
+                </div>
+              )}
 
               {/* DOCUMENT IMAGES */}
-
-              <div>
-
-                <h4 className="text-cyan-400 mb-2">
-                  Documents
-                </h4>
-
-                <DocItem
-                  title="Aadhaar"
-                  img={view.documents?.aadhaar?.image}
-                  setPreview={setImagePreview}
-                />
-
-                <DocItem
-                  title="PAN"
-                  img={view.documents?.pan?.image}
-                  setPreview={setImagePreview}
-                />
-
-                <DocItem
-                  title="Driving License"
-                  img={view.documents?.drivingLicense?.image}
-                  setPreview={setImagePreview}
-                />
-
-              </div>
-
+              {(view.documents?.aadhaar?.image || view.documents?.pan?.image || view.documents?.drivingLicense?.image) && (
+                <div>
+                  <p className="text-[10px] uppercase text-slate-500 tracking-wider mb-2">Document Images</p>
+                  <div className="space-y-2">
+                    <DocItem title="Aadhaar"         img={view.documents?.aadhaar?.image}         setPreview={setImagePreview} />
+                    <DocItem title="PAN"              img={view.documents?.pan?.image}              setPreview={setImagePreview} />
+                    <DocItem title="Driving License"  img={view.documents?.drivingLicense?.image}  setPreview={setImagePreview} />
+                  </div>
+                </div>
+              )}
 
               {/* REJECT REASON */}
-
-              {view.kycStatus === "rejected" &&
-                view.kycRejectReason && (
-
-                  <div className="bg-red-500/10 p-3 rounded">
-
-                    <p className="text-red-400 text-sm">
-                      Reject Reason:
-                    </p>
-
-                    <p className="text-gray-300 text-sm">
-                      {view.kycRejectReason}
-                    </p>
-
-                  </div>
-
-                )}
+              {view.kycStatus === "rejected" && view.kycRejectReason && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                  <p className="text-[10px] uppercase text-red-400 mb-1">Reject Reason</p>
+                  <p className="text-sm text-slate-300 leading-relaxed">{view.kycRejectReason}</p>
+                </div>
+              )}
 
             </div>
 
+            {/* ── FOOTER ACTIONS ── */}
+            {view.kycStatus === "pending" && (
+              <div className="flex gap-3 px-5 py-4 border-t border-white/10 flex-shrink-0">
+                <button
+                  onClick={() => { updateStatus(view._id, "verified"); setView(null); }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-green-500 hover:bg-green-400 text-black font-semibold rounded-xl transition text-sm"
+                >
+                  <CheckCircle size={16} /> Verify
+                </button>
+                <button
+                  onClick={() => { setRejectId(view._id); setView(null); }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-500 hover:bg-red-400 text-black font-semibold rounded-xl transition text-sm"
+                >
+                  <XCircle size={16} /> Reject
+                </button>
+              </div>
+            )}
+
           </div>
-
         </div>
-
       )}
 
 
@@ -473,7 +473,7 @@ export default function AdminKycPage() {
 
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <img
-            src={`${API}${imagePreview}`}
+  src={imagePreview}
             className="max-h-[90%] rounded shadow-lg"
           />
 
