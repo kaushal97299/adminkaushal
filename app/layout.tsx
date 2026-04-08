@@ -43,7 +43,7 @@ export default function RootLayout({
             <Navigation />
 
             {/* Main Content */}
-            <main className="flex-1 md:ml-59 p-6 pb-24 md:pb-6">
+            <main className="ml-[240px] w-[calc(100vw-260px)] min-h-screen">
               {children}
             </main>
 
