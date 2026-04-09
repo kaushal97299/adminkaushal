@@ -30,10 +30,10 @@ const menu: MenuItem[] = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard, showInMobile: true },
   { name: "Users", path: "/users", icon: Users, showInMobile: true },
   { name: "Sellers", path: "/sellers", icon: Store, showInMobile: true },
-  { name: "Inventory", path: "/inventory", icon: Store, showInMobile: true },
+  { name: "Inventory", path: "/inventory", icon: Store, showInMobile: false },
   { name: "Contact", path: "/contact", icon: BookOpen, showInMobile: false },
   { name: "Reports", path: "/reports", icon: BarChart3, showInMobile: true },
-  { name: "Settings", path: "/settings", icon: Settings, showInMobile: true },
+  { name: "Settings", path: "/settings", icon: Settings, showInMobile: false },
   { name: "Admin Claims", path: "/adminclaims", icon: ShieldAlert, showInMobile: true },
 ];
 
@@ -95,7 +95,7 @@ export default function Navigation() {
 <>
 {/* ================= Desktop Sidebar ================= */}
 
-<aside className="hidden md:flex fixed left-0 top-0 h-screen w-60 flex-col bg-[#020617] border-r border-white/10">
+<aside className="hidden md:flex fixed left-0 top-0 h-screen w-60 flex-col bg-[#020617] border-r border-white/10 z-30">
 
 {/* BRAND */}
 
@@ -187,7 +187,7 @@ className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text
 
 {/* ================= Mobile Bottom Bar ================= */}
 
-<div className="fixed bottom-0 left-0 w-full h-16 bg-black/80 backdrop-blur-xl border-t border-white/10 flex justify-around items-center md:hidden z-40">
+<div className="fixed bottom-0 left-0 w-full h-16 bg-[#020617]/95 backdrop-blur-xl border-t border-white/10 flex justify-around items-center md:hidden z-40">
 
 {menu
 .filter((item)=>item.showInMobile)

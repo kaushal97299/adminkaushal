@@ -5,6 +5,7 @@ import "./globals.css";
 
 import Navigation from "./adsidebar/page";
 import AuthGuard from "./scourty/gurd";
+import ConditionalLayout from "./ConditionalLayout";
 
 /* Fonts */
 const geistSans = Geist({
@@ -36,18 +37,9 @@ export default function RootLayout({
         {/* 🔐 AUTH GUARD */}
         <AuthGuard>
 
-          {/* MAIN LAYOUT WRAPPER */}
-          <div className="flex min-h-screen">
-
-            {/* Sidebar */}
-            <Navigation />
-
-            {/* Main Content */}
-            <main className="ml-[240px] w-[calc(100vw-260px)] min-h-screen">
-              {children}
-            </main>
-
-          </div>
+          <ConditionalLayout nav={<Navigation />}>
+            {children}
+          </ConditionalLayout>
 
         </AuthGuard>
       </body>
