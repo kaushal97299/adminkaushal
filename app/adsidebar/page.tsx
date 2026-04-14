@@ -30,7 +30,7 @@ const menu: MenuItem[] = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard, showInMobile: true },
   { name: "Users", path: "/users", icon: Users, showInMobile: true },
   { name: "Sellers", path: "/sellers", icon: Store, showInMobile: true },
-  { name: "Inventory", path: "/inventory", icon: Store, showInMobile: false },
+  { name: "Inventory", path: "/inventory", icon: Store, showInMobile: true   },
   { name: "Contact", path: "/contact", icon: BookOpen, showInMobile: false },
   { name: "Reports", path: "/reports", icon: BarChart3, showInMobile: true },
   { name: "Settings", path: "/settings", icon: Settings, showInMobile: false },
