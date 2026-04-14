@@ -32,8 +32,8 @@ const menu: MenuItem[] = [
   { name: "Sellers", path: "/sellers", icon: Store, showInMobile: true },
   { name: "Inventory", path: "/inventory", icon: Store, showInMobile: true   },
   { name: "Contact", path: "/contact", icon: BookOpen, showInMobile: false },
-  { name: "Reports", path: "/reports", icon: BarChart3, showInMobile: true },
-  { name: "Settings", path: "/settings", icon: Settings, showInMobile: false },
+  // { name: "Reports", path: "/reports", icon: BarChart3, showInMobile: true },
+  // { name: "Settings", path: "/settings", icon: Settings, showInMobile: false },
   { name: "Admin Claims", path: "/adminclaims", icon: ShieldAlert, showInMobile: true },
 ];
 
@@ -49,7 +49,7 @@ export default function Navigation() {
     localStorage.removeItem("admin_token");
     router.push("/access");
   };
-  
+
 
   const renderItem = (item:MenuItem,mobile=false)=>{
 
